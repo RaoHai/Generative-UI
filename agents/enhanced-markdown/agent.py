@@ -18,7 +18,7 @@ class State(MessagesState):
 @tool
 def get_stock_data(stock_name: str) -> dict:
     """
-        获取指定股票的数据
+        GET Stock Data from given stock name
     """
     print(f"get_stock_data: {stock_name}")
 
@@ -99,32 +99,11 @@ async def generate_report(state: State) -> State:
     ### Task
         You are given a stock ticker and a date.
         You need to analyze the stock market and provide a report.
-        The report should be in Html format. Following the following format:
-        - including document title, h1 highlighted title, and a description of the report.
-        - short analyze text of the stock market.
-        - using d3 to draw the chart
-        - using candle stick chart to draw the chart
-        - d3 chart with interactive features:
-            - tooltips to show the details of the stock
-            - responsive design
-    ### Output Format
-        <html>
-            <head>
-                <title>Stock Report</title>
-                <style>
-                    ... content of css
-                </style>
-            </head>
-            <body>
-                ... content of html
-                <script>
-                    ... content of javascript
-                </script>
-            </body>
-        </html>
-    
-    ### Important Rules
-    - Data of chart MUST keep origin format, NEVER ellipsize them.
+        The report should be in markdown with enhanced symbols and components.
+        - use <highlight> to highlight the important parts of the text.
+        - use <CandlestickChart> to draw the candlestick chart.
+    ### Example
+        <CandlestickChart title="AAPL" />
     """
     
     model = ChatOpenAI(model="gpt-4o")

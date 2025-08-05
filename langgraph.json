@@ -3,7 +3,8 @@
   "dockerfile_lines": [],
   "dependencies": ["."],
   "graphs": {
-    "raw_web": "./agents/raw-web/agent.py:graph"
+    "raw_web": "./agents/raw-web/agent.py:graph",
+    "enhanced_markdown": "./agents/enhanced-markdown/agent.py:graph"
   },
   "env": ".env"
 }
