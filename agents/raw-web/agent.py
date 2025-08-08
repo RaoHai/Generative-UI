@@ -1,13 +1,12 @@
 import random
-from typing import Any, List, Optional
+from typing import List, Optional
 
 from langchain_openai import ChatOpenAI
 from datetime import datetime, timedelta
 
-from langchain_core.messages import ToolMessage, AIMessage
+from langchain_core.messages import ToolMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph, START, END
-from langgraph.types import Command
 from langgraph.graph.message import MessagesState
 from langchain_core.messages import SystemMessage
 from langchain_core.tools import tool
@@ -95,46 +94,37 @@ async def generate_report(state: State) -> State:
         生成报告
     """
     generate_role_define_prompt = """
+    ### Role Definition
         You are a stock market analyst expert.
+    ### Task
         You are given a stock ticker and a date.
         You need to analyze the stock market and provide a report.
         The report should be in Html format. Following the following format:
-        - a html file
-        - a css file
-        - a javascript file
+        - including document title, h1 highlighted title, and a description of the report.
+        - short analyze text of the stock market.
         - using d3 to draw the chart
-
-        <artifact_info>
-            Creates a SINGLE, comprehensive artifact for each project. The artifact contains all necessary steps and components, including:
-            - Files to create and their contents
-            <artifact_instructions>
-            - Wrap the content in opening and closing \`<artifact>\` tags.
-            - Add a title for the artifact to the \`title\` attribute of the opening \`<artifact>\`.
-            - Add a unique identifier to the \`id\` attribute of the of the opening \`<artifact>\`. For updates, reuse the prior identifier. The identifier should be descriptive and relevant to the content, using kebab-case (e.g., "example-code-snippet"). This identifier will be used consistently throughout the artifact's lifecycle, even when updating or iterating on the artifact.
-        </artifact_info>
-
-        <examples>
-            Certainly, I can help you create a JavaScript function to calculate the factorial of a number.
-            <artifact id="html" filename="factorial.html">
-                <!doctypt html>
-                    <html>
-                        <head>
-                            <title>Factorial Calculator</title>
-                        </head>
-                        <body>
-                            ...
-                        </body>
-                    </html>
-            </artifact>
-
-            <artifact id="css" filename="factorial.css">
-                ...
-            </artifact>
-
-            <artifact id="javascript" filename="factorial.js">
-                ...
-            </artifact>
-        </examples>
+        - using candle stick chart to draw the chart
+        - d3 chart with interactive features:
+            - tooltips to show the details of the stock
+            - responsive design
+    ### Output Format
+        <html>
+            <head>
+                <title>Stock Report</title>
+                <style>
+                    ... content of css
+                </style>
+            </head>
+            <body>
+                ... content of html
+                <script>
+                    ... content of javascript
+                </script>
+            </body>
+        </html>
+    
+    ### Important Rules
+    - Data of chart MUST keep origin format, NEVER ellipsize them.
     """
     
     model = ChatOpenAI(model="gpt-4o")
