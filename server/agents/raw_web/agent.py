@@ -25,32 +25,32 @@ def get_stock_data(stock_name: str) -> dict:
     stock_data = {
         stock_name: []
     }
-    
+
     # 设置基准价格和日期
     base_price = 150.0
     start_date = datetime(2024, 1, 1)
-    
+
     for i in range(100):
         # 生成日期（从2024年1月1日开始，每天一条数据）
         current_date = start_date + timedelta(days=i)
-        
+
         # 生成价格波动（基于前一天的收盘价）
         if i == 0:
             open_price = base_price
         else:
             open_price = stock_data[stock_name][i-1]["close"]
-        
+
         # 生成价格波动（±3%）
         price_change = random.uniform(-0.03, 0.03)
         close_price = open_price * (1 + price_change)
-        
+
         # 生成最高价和最低价
         high_price = max(open_price, close_price) * random.uniform(1.0, 1.02)
         low_price = min(open_price, close_price) * random.uniform(0.98, 1.0)
-        
+
         # 生成成交量（100万到1000万股之间）
         volume = random.randint(1000000, 10000000)
-        
+
         stock_data[stock_name].append({
             "date": current_date.strftime("%Y-%m-%d"),
             "open": round(open_price, 2),
@@ -59,14 +59,14 @@ def get_stock_data(stock_name: str) -> dict:
             "close": round(close_price, 2),
             "volume": volume
         })
-    
-    return stock_data 
+
+    return stock_data
 
 async def process_tools_node(state: State) -> State:
     """处理工具调用的节点"""
     # 获取最后一条消息
     last_message = state["messages"][-1]
-    
+
     if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
         # 处理工具调用
         tool_messages = []
@@ -75,15 +75,15 @@ async def process_tools_node(state: State) -> State:
                 stock_name = tool_call['args']['stock_name']
                 result = get_stock_data(stock_name)
                 tool_messages.append(ToolMessage(
-                    content=str(result), 
+                    content=str(result),
                     tool_call_id=tool_call['id']
                 ))
-        
+
         return {
             "messages": state["messages"] + tool_messages,
             "next_step": "generate_report"
         }
-    
+
     return {
         "messages": state["messages"],
         "next_step": "end"
@@ -122,11 +122,11 @@ async def generate_report(state: State) -> State:
                 </script>
             </body>
         </html>
-    
+
     ### Important Rules
     - Data of chart MUST keep origin format, NEVER ellipsize them.
     """
-    
+
     model = ChatOpenAI(model="gpt-4o")
 
     # Run the model to generate a response
@@ -134,7 +134,7 @@ async def generate_report(state: State) -> State:
         SystemMessage(content=generate_role_define_prompt),
         *state["messages"],
     ], RunnableConfig(recursion_limit=25))
-    
+
     messages = state["messages"] + [response]
 
     return {
@@ -142,12 +142,12 @@ async def generate_report(state: State) -> State:
         "next_step": "process_tools"
     }
 
-async def chat_node(state: State) -> State:    
+async def chat_node(state: State) -> State:
     system_prompt = """
         You are a stock market analyst expert.
         You are given a stock ticker and a date.
         You need to analyze the stock market and provide a report.
-    
+
         You will follow the following steps:
         1. Get the stock data
         2. Analyze the stock data
