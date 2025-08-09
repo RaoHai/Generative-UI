@@ -15,9 +15,8 @@ router = APIRouter(
 raw_web_handler = LangGraphHandler(graph)
 
 
-@router.post("/raw-web/stream")
+@router.post("/stream")
 async def raw_web_stream(request: ChatRequest):
-    """流式聊天接口 - Server-Sent Events"""
     try:
         return StreamingResponse(
             raw_web_handler.stream(request),
