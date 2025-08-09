@@ -12,17 +12,17 @@ const FeatureCard = ({ icon, title, description }: { icon: string; title: string
 
 const ConceptCard = ({ title, traditional, generative }: { title: string; traditional: string; generative: string }) => (
   <div className="bg-white/80 backdrop-blur-sm rounded-lg border border-slate-200/50 overflow-hidden">
-    <div className="px-4 py-3 bg-gradient-to-r from-slate-50 to-slate-100/50 border-b border-slate-200/50">
-      <h3 className="font-semibold text-slate-900">{title}</h3>
+    <div className="px-3 py-1.5 bg-gradient-to-r from-slate-50 to-slate-100/50 border-b border-slate-200/50">
+      <h3 className="font-semibold text-slate-900 text-xs">{title}</h3>
     </div>
     <div className="grid grid-cols-2">
-      <div className="p-4 border-r border-slate-200/50">
-        <div className="text-xs text-slate-500 uppercase tracking-wide mb-2">Traditional UI</div>
-        <p className="text-sm text-slate-700">{traditional}</p>
+      <div className="p-2 border-r border-slate-200/50">
+        <div className="text-xs text-slate-500 uppercase tracking-wide mb-0.5">Traditional</div>
+        <p className="text-xs text-slate-700 leading-tight">{traditional}</p>
       </div>
-      <div className="p-4">
-        <div className="text-xs text-blue-600 uppercase tracking-wide mb-2 font-medium">Generative UI</div>
-        <p className="text-sm text-slate-700">{generative}</p>
+      <div className="p-2">
+        <div className="text-xs text-blue-600 uppercase tracking-wide mb-0.5 font-medium">Generative</div>
+        <p className="text-xs text-slate-700 leading-tight">{generative}</p>
       </div>
     </div>
   </div>
@@ -114,11 +114,12 @@ export default function HomePage() {
         <section className="mb-12">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-slate-900 mb-4">
-              Beyond <span className="gradient-text">Static Interfaces</span>
+              <span className="gradient-text">Generative UI</span> Maturity Spectrum
             </h1>
             <p className="text-lg text-slate-600 max-w-3xl mx-auto">
-              Generative UI represents a paradigm shift from traditional static interfaces to
-              <strong className="text-blue-600"> runtime-generated, context-aware user experiences</strong> powered by AI Agents.
+              Extending the generative paradigm from text and content generation to interface and application generation.
+              Generative UI represents <strong className="text-blue-600">runtime-generated, AI-driven user experiences</strong>
+              that adapt dynamically to context, user input, and real-time reasoning.
             </p>
           </div>
 
@@ -155,67 +156,108 @@ export default function HomePage() {
         </section>
 
         {/* Key Differences */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-slate-900 mb-6">AI Coding vs <span className="gradient-text">Generative UI</span></h2>
-          <div className="grid gap-4">
+        <section className="mb-8">
+          <h2 className="text-xl font-bold text-slate-900 mb-3">Traditional UI vs <span className="gradient-text">Generative UI</span></h2>
+          <div className="grid gap-2">
             <ConceptCard
-              title="Development Phase"
-              traditional="Code generated during development, reviewed by developers, then compiled and deployed"
-              generative="Interface generated at runtime by AI Agent based on real-time context and user input"
+              title="Interface Creation"
+              traditional="Static interfaces designed and coded during development phase"
+              generative="Dynamic interfaces generated at runtime by AI based on context"
             />
             <ConceptCard
               title="User Experience"
-              traditional="Same static interface for all users, predetermined layouts and interactions"
-              generative="Personalized interface for each user, adaptive layouts based on context and behavior"
+              traditional="Same fixed interface for all users with predetermined layouts"
+              generative="Personalized interfaces that adapt to individual users and contexts"
             />
             <ConceptCard
-              title="Flexibility"
-              traditional="Limited to predefined components and layouts, changes require code updates"
-              generative="Unlimited possibilities, AI can create novel interface patterns and interactions"
+              title="Adaptability"
+              traditional="Limited to predefined components, changes require development cycles"
+              generative="Infinite possibilities with AI creating novel patterns in real-time"
             />
           </div>
         </section>
 
-        {/* Core Capabilities */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-slate-900 mb-6">Core Capabilities</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <FeatureCard
-              icon="🧠"
-              title="Context Awareness"
-              description="AI analyzes real-time context, user input, and interaction history to determine optimal interface structure"
-            />
-            <FeatureCard
-              icon="⚡"
-              title="Runtime Generation"
-              description="Interfaces created dynamically during user interaction, not predetermined during development"
-            />
-            <FeatureCard
-              icon="🎨"
-              title="Adaptive Design"
-              description="Layout, components, and interactions automatically adjust based on user needs and preferences"
-            />
-            <FeatureCard
-              icon="🔄"
-              title="Continuous Learning"
-              description="System improves interface generation based on user feedback and interaction patterns"
-            />
-            <FeatureCard
-              icon="🚀"
-              title="Infinite Possibilities"
-              description="Break free from component library constraints, create entirely new interface patterns"
-            />
-            <FeatureCard
-              icon="📱"
-              title="Cross-Platform"
-              description="Single AI Agent generates optimal interfaces for different devices and platforms"
-            />
+                                {/* Generative UI Maturity Spectrum */}
+        <section className="mb-8">
+          <h2 className="text-xl font-bold text-slate-900 mb-3">Generative UI Maturity Spectrum</h2>
+          <p className="text-slate-600 mb-4 max-w-4xl text-sm">
+            Generative UI encompasses a spectrum of maturity levels, from basic document formatting to fully interactive agent-driven interfaces.
+            Understanding these levels helps identify the appropriate approach for different use cases.
+          </p>
+
+                    {/* Compact Timeline Layout */}
+          <div className="relative">
+            {/* Timeline Line */}
+            <div className="absolute top-5 left-0 right-0 h-px bg-gradient-to-r from-blue-200 via-purple-200 to-indigo-200"></div>
+
+            {/* Timeline Levels */}
+            <div className="relative grid grid-cols-5 gap-2">
+              {/* Level 0 */}
+              <div className="text-center">
+                <div className="relative z-10 w-10 h-10 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full flex items-center justify-center mx-auto mb-2 border-2 border-white shadow-md">
+                  <span className="text-sm">📝</span>
+                </div>
+                <div className="bg-white/90 backdrop-blur-sm rounded-lg p-1.5 border border-slate-200/50 min-h-[75px]">
+                  <h3 className="font-semibold text-slate-900 mb-0.5 text-xs">Level 0</h3>
+                  <h4 className="font-medium text-slate-800 mb-0.5 text-xs">Markdown</h4>
+                  <p className="text-slate-600 text-xs leading-tight">Basic content & formatting</p>
+                </div>
+              </div>
+
+                            {/* Level 1 */}
+              <div className="text-center">
+                <div className="relative z-10 w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto mb-2 border-2 border-white shadow-md">
+                  <span className="text-sm">⚡</span>
+                </div>
+                <div className="bg-white/90 backdrop-blur-sm rounded-lg p-1.5 border border-slate-200/50 min-h-[75px]">
+                  <h3 className="font-semibold text-slate-900 mb-0.5 text-xs">Level 1</h3>
+                  <h4 className="font-medium text-slate-800 mb-0.5 text-xs">AI Code</h4>
+                  <p className="text-slate-600 text-xs leading-tight">Static code generation</p>
+                </div>
+              </div>
+
+              {/* Level 2 */}
+              <div className="text-center">
+                <div className="relative z-10 w-10 h-10 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center mx-auto mb-2 border-2 border-white shadow-md">
+                  <span className="text-sm">🔄</span>
+                </div>
+                <div className="bg-white/90 backdrop-blur-sm rounded-lg p-1.5 border border-slate-200/50 min-h-[75px]">
+                  <h3 className="font-semibold text-slate-900 mb-0.5 text-xs">Level 2</h3>
+                  <h4 className="font-medium text-slate-800 mb-0.5 text-xs">Dynamic UI</h4>
+                  <p className="text-slate-600 text-xs leading-tight">Context-driven selection</p>
+                </div>
+              </div>
+
+              {/* Level 3 */}
+              <div className="text-center">
+                <div className="relative z-10 w-10 h-10 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2 border-2 border-white shadow-md">
+                  <span className="text-sm">🏗️</span>
+                </div>
+                <div className="bg-white/90 backdrop-blur-sm rounded-lg p-1.5 border border-slate-200/50 min-h-[75px]">
+                  <h3 className="font-semibold text-slate-900 mb-0.5 text-xs">Level 3</h3>
+                  <h4 className="font-medium text-slate-800 mb-0.5 text-xs">SDUI</h4>
+                  <p className="text-slate-600 text-xs leading-tight">Declarative universal rendering</p>
+                </div>
+              </div>
+
+              {/* Level 4 */}
+              <div className="text-center">
+                <div className="relative z-10 w-10 h-10 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-full flex items-center justify-center mx-auto mb-2 border-2 border-white shadow-md">
+                  <span className="text-sm">🤖</span>
+                </div>
+                <div className="bg-white/90 backdrop-blur-sm rounded-lg p-1.5 border border-slate-200/50 min-h-[75px]">
+                  <h3 className="font-semibold text-slate-900 mb-0.5 text-xs">Level 4</h3>
+                  <h4 className="font-medium text-slate-800 mb-0.5 text-xs">Agent UI</h4>
+                  <p className="text-slate-600 text-xs leading-tight">Interactive AI dialogue</p>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
         {/* Technical Implementation */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-slate-900 mb-6">Implementation Architecture</h2>
+        <section className="mb-8">
+          <h2 className="text-xl font-bold text-slate-900 mb-3">Implementation Architecture</h2>
           <div className="glass-card rounded-xl p-6 relative">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-indigo-500/5 rounded-xl"></div>
             <div className="relative grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -244,41 +286,90 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Use Cases */}
+        {/* Implementation Approaches */}
         <section>
-          <h2 className="text-2xl font-bold text-slate-900 mb-6">Application Scenarios</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white/80 backdrop-blur-sm rounded-lg border border-slate-200/50 p-6">
-              <div className="flex items-center mb-3">
-                <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                <span className="text-xs text-green-700 bg-green-50 px-2 py-1 rounded">Production Ready</span>
+          <h2 className="text-xl font-bold text-slate-900 mb-3">Implementation Approaches</h2>
+          <p className="text-slate-600 mb-4 max-w-4xl text-sm">
+            Different maturity levels require distinct technical approaches and architectural considerations.
+            Each level addresses specific use cases and complexity requirements.
+          </p>
+
+          {/* Balanced 2x2 Grid Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Basic Levels */}
+            <div className="bg-gradient-to-br from-slate-50/80 to-blue-50/80 backdrop-blur-sm rounded-xl border border-slate-200/50 p-8">
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-slate-100 to-blue-100 rounded-lg flex items-center justify-center mr-3">
+                  <span className="text-lg">📝</span>
+                </div>
+                <div>
+                  <span className="text-xs text-slate-600 bg-slate-100 px-2 py-1 rounded">Level 0-1</span>
+                  <h3 className="font-semibold text-slate-900 mt-1">Document & Code Generation</h3>
+                </div>
               </div>
-              <h3 className="font-semibold text-slate-900 mb-2">Intelligent Form Generation</h3>
-              <p className="text-slate-600 text-sm">AI generates optimal form layouts and validation rules based on data types and business logic</p>
+              <p className="text-slate-600 text-sm mb-4">Static content generation with Markdown formatting and AI-assisted code creation for development efficiency</p>
+              <div className="text-xs text-slate-500">
+                <span className="inline-block bg-slate-100 px-2 py-1 rounded mr-2 mb-1">Markdown</span>
+                <span className="inline-block bg-slate-100 px-2 py-1 rounded mr-2 mb-1">Code Gen</span>
+                <span className="inline-block bg-slate-100 px-2 py-1 rounded mr-2 mb-1">Static</span>
+              </div>
             </div>
-            <div className="bg-white/80 backdrop-blur-sm rounded-lg border border-slate-200/50 p-6">
-              <div className="flex items-center mb-3">
-                <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
-                <span className="text-xs text-yellow-700 bg-yellow-50 px-2 py-1 rounded">In Development</span>
+
+            {/* Dynamic UI */}
+            <div className="bg-gradient-to-br from-green-50/80 to-emerald-50/80 backdrop-blur-sm rounded-xl border border-green-200/50 p-8">
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg flex items-center justify-center mr-3">
+                  <span className="text-lg">🔄</span>
+                </div>
+                <div>
+                  <span className="text-xs text-green-700 bg-green-100 px-2 py-1 rounded">Level 2</span>
+                  <h3 className="font-semibold text-slate-900 mt-1">Rule-Based Dynamic UI</h3>
+                </div>
               </div>
-              <h3 className="font-semibold text-slate-900 mb-2">Dynamic Dashboard Creation</h3>
-              <p className="text-slate-600 text-sm">Real-time generation of relevant charts and controls based on data characteristics and user roles</p>
+              <p className="text-slate-600 text-sm mb-4">Context-driven component selection from predefined libraries with conditional rendering logic</p>
+              <div className="text-xs text-slate-500">
+                <span className="inline-block bg-green-100 px-2 py-1 rounded mr-2 mb-1">Context-Aware</span>
+                <span className="inline-block bg-green-100 px-2 py-1 rounded mr-2 mb-1">Component Library</span>
+                <span className="inline-block bg-green-100 px-2 py-1 rounded mr-2 mb-1">Dynamic</span>
+              </div>
             </div>
-            <div className="bg-white/80 backdrop-blur-sm rounded-lg border border-slate-200/50 p-6">
-              <div className="flex items-center mb-3">
-                <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                <span className="text-xs text-blue-700 bg-blue-50 px-2 py-1 rounded">Research</span>
+
+            {/* Abstract Assembly */}
+            <div className="bg-gradient-to-br from-purple-50/80 to-violet-50/80 backdrop-blur-sm rounded-xl border border-purple-200/50 p-8">
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-100 to-violet-100 rounded-lg flex items-center justify-center mr-3">
+                  <span className="text-lg">🏗️</span>
+                </div>
+                <div>
+                  <span className="text-xs text-purple-700 bg-purple-100 px-2 py-1 rounded">Level 3</span>
+                  <h3 className="font-semibold text-slate-900 mt-1">Abstract Assembly (SDUI)</h3>
+                </div>
               </div>
-              <h3 className="font-semibold text-slate-900 mb-2">Adaptive Content Editors</h3>
-              <p className="text-slate-600 text-sm">Context-aware editing tools that adapt based on content type and user preferences</p>
+              <p className="text-slate-600 text-sm mb-4">Declarative UI descriptions with universal rendering engines for cross-platform compatibility</p>
+              <div className="text-xs text-slate-500">
+                <span className="inline-block bg-purple-100 px-2 py-1 rounded mr-2 mb-1">JSON Schema</span>
+                <span className="inline-block bg-purple-100 px-2 py-1 rounded mr-2 mb-1">Universal SDK</span>
+                <span className="inline-block bg-purple-100 px-2 py-1 rounded mr-2 mb-1">Cross-Platform</span>
+              </div>
             </div>
-            <div className="bg-white/80 backdrop-blur-sm rounded-lg border border-slate-200/50 p-6">
-              <div className="flex items-center mb-3">
-                <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
-                <span className="text-xs text-purple-700 bg-purple-50 px-2 py-1 rounded">Concept</span>
+
+            {/* Agent-Driven */}
+            <div className="bg-gradient-to-br from-indigo-50/80 to-blue-50/80 backdrop-blur-sm rounded-xl border border-indigo-200/50 p-8">
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-indigo-100 to-blue-100 rounded-lg flex items-center justify-center mr-3">
+                  <span className="text-lg">🤖</span>
+                </div>
+                <div>
+                  <span className="text-xs text-indigo-700 bg-indigo-100 px-2 py-1 rounded">Level 4</span>
+                  <h3 className="font-semibold text-slate-900 mt-1">Agent-Driven Interfaces</h3>
+                </div>
               </div>
-              <h3 className="font-semibold text-slate-900 mb-2">Personalized Shopping Interfaces</h3>
-              <p className="text-slate-600 text-sm">Dynamic product displays and recommendation modules based on user behavior and preferences</p>
+              <p className="text-slate-600 text-sm mb-4">Fully interactive AI-driven UI with real-time generation, specialized protocols, and continuous feedback loops</p>
+              <div className="text-xs text-slate-500">
+                <span className="inline-block bg-indigo-100 px-2 py-1 rounded mr-2 mb-1">AI Agents</span>
+                <span className="inline-block bg-indigo-100 px-2 py-1 rounded mr-2 mb-1">Real-time</span>
+                <span className="inline-block bg-indigo-100 px-2 py-1 rounded mr-2 mb-1">Interactive</span>
+              </div>
             </div>
           </div>
         </section>
