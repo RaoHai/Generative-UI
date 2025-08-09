@@ -11,7 +11,6 @@ on:
     paths:
       - .github/workflows/aws-preview.yml
       - server/**
-      - subscriber/**
       - template.yml
 
 env:
@@ -41,13 +40,15 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       # Build inside Docker containers
-      - run: sam build --use-container --config-file .aws/petercat-preview.toml
+      - run: sam build --use-container --config-file .aws/generative-ui-ap-southeast.toml
 
       # Prevent prompts and failure when the stack is unchanged
       - run: |
           sam deploy \
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
-            --config-file .aws/generative-ui-demo-preview.toml \
+            --config-file .aws/generative-ui-ap-southeast.toml \
             --parameter-overrides \
-              ParameterKey=OpenAIAPIKey,ParameterValue=${{ secrets.OPENAI_API_KEY }}
+              ParameterKey=OpenAIAPIKey,ParameterValue=${{ secrets.OPENAI_API_KEY }} \
+              ParameterKey=OpenAIBaseUrl,ParameterValue=${{ secrets.OPENAI_BASE_URL }} \
+              ParameterKey=S3TempBucketName,ParameterValue=${{ secrets.S3_TEMP_BUCKET_NAME }}
