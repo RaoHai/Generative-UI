@@ -1,0 +1,6 @@
+---
+description: language
+globs: *.ts, *.tsx
+alwaysApply: false
+---
+Keep Application in English
