@@ -2,6 +2,8 @@ import os
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from dotenv import load_dotenv
 
 from agents.router import router
@@ -16,7 +18,19 @@ load_dotenv()
 def home():
   return {"message": "Hello, World!"}
 
+cors_origins = ["https://agentic-gui.vercel.app/"]
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(router)
+
 
 if __name__ == "__main__":
     if is_dev:
