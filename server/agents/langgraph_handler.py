@@ -1,25 +1,187 @@
-import asyncio
-import json
 import logging
-from typing import AsyncIterator, Dict, Any, Union
+import uuid
+import os
+from datetime import datetime
+from typing import AsyncIterator, Dict, Any, Union, Optional
+
 from langchain_core.messages import BaseMessage, HumanMessage
 
-from .models import ChatRequest, ChatResponse, StreamChunk, ChatMessage
+from .models import ChatRequest, ChatResponse, StreamChunk, ChatMessage, EventType, EventData, StreamEvent
 
-# 设置日志
-logger = logging.getLogger(__name__)
+# 创建专门的事件日志器
+event_logger = logging.getLogger(f"{__name__}.events")
+event_logger.setLevel(logging.INFO)
+
+# 为 event_logger 添加处理器（如果还没有的话）
+if not event_logger.handlers:
+    # 创建控制台处理器
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    console_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    console_handler.setFormatter(console_formatter)
+    event_logger.addHandler(console_handler)
+
+    # 创建文件处理器
+    log_dir = "logs"
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+    file_handler = logging.FileHandler(
+        os.path.join(log_dir, 'langgraph_events.log'),
+        encoding='utf-8'
+    )
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(console_formatter)
+    event_logger.addHandler(file_handler)
+
+
+class LangGraphEventProcessor:
+    """LangGraph 事件处理器，用于过滤和格式化事件"""
+
+    def __init__(self, debug_mode: bool = False):
+        self.debug_mode = debug_mode
+
+    def _should_forward_event(self, event: Dict[str, Any]) -> bool:
+        """判断事件是否应该转发到前端"""
+        event_type = event.get("event", "")
+        event_name = event.get("name", "")
+
+        # 始终转发的事件类型
+        important_events = [
+            "on_chat_model_stream",  # 聊天模型流式输出
+            "on_tool_start",         # 工具开始
+            "on_tool_end",           # 工具结束
+            "on_chain_start",        # 链开始
+            "on_chain_end",          # 链结束
+        ]
+
+        # 在调试模式下转发更多事件
+        if self.debug_mode:
+            debug_events = [
+                "on_llm_start",
+                "on_llm_end",
+                "on_retriever_start",
+                "on_retriever_end",
+            ]
+            important_events.extend(debug_events)
+
+        return event_type in important_events
+
+    def _format_event(self, raw_event: Dict[str, Any], run_id: str, thread_id: str) -> Optional[StreamEvent]:
+        """将原始 LangGraph 事件格式化为标准事件"""
+        event_type = raw_event.get("event", "")
+        data = raw_event.get("data", {})
+        name = raw_event.get("name", "")
+
+        try:
+            # 处理聊天模型流式输出
+            if event_type == "on_chat_model_stream":
+                chunk = data.get("chunk", {})
+                content = ""
+
+                # 处理不同的 chunk 格式
+                if hasattr(chunk, 'content'):
+                    content = chunk.content
+                elif isinstance(chunk, dict):
+                    content = chunk.get("content", "")
+                elif isinstance(chunk, str):
+                    content = chunk
+
+                return StreamEvent(
+                    event=EventData(
+                        type=EventType.CHAT_TOKEN,
+                        content=content,
+                        metadata={"model": name}
+                    ),
+                    run_id=run_id,
+                    thread_id=thread_id
+                )
+
+            # 处理工具调用
+            elif event_type == "on_tool_start":
+                return StreamEvent(
+                    event=EventData(
+                        type=EventType.TOOL_START,
+                        tool_name=name,
+                        metadata={"input": data.get("input", {})}
+                    ),
+                    run_id=run_id,
+                    thread_id=thread_id
+                )
+
+            elif event_type == "on_tool_end":
+                return StreamEvent(
+                    event=EventData(
+                        type=EventType.TOOL_END,
+                        tool_name=name,
+                        content=str(data.get("output", "")),
+                        metadata={"duration": data.get("duration", 0)}
+                    ),
+                    run_id=run_id,
+                    thread_id=thread_id
+                )
+
+            # 处理链/步骤事件
+            elif event_type == "on_chain_start":
+                return StreamEvent(
+                    event=EventData(
+                        type=EventType.STEP_START,
+                        step_name=name,
+                        metadata=data
+                    ),
+                    run_id=run_id,
+                    thread_id=thread_id
+                )
+
+            elif event_type == "on_chain_end":
+                return StreamEvent(
+                    event=EventData(
+                        type=EventType.STEP_END,
+                        step_name=name,
+                        metadata=data
+                    ),
+                    run_id=run_id,
+                    thread_id=thread_id
+                )
+
+            # 调试模式下的其他事件
+            elif self.debug_mode:
+                return StreamEvent(
+                    event=EventData(
+                        type=EventType.DEBUG,
+                        content=f"{event_type}: {name}",
+                        metadata=data
+                    ),
+                    run_id=run_id,
+                    thread_id=thread_id
+                )
+
+        except Exception as e:
+            logger.error(f"Error formatting event: {e}")
+            return StreamEvent(
+                event=EventData(
+                    type=EventType.ERROR,
+                    content=f"Event processing error: {str(e)}"
+                ),
+                run_id=run_id,
+                thread_id=thread_id
+            )
+
+        return None
 
 
 class LangGraphHandler:
     """LangGraph 处理器，用于标准化调用和响应处理"""
 
-    def __init__(self, graph):
+    def __init__(self, graph, debug_mode: bool = False):
         """
         初始化处理器
         Args:
             graph: 编译后的 LangGraph 实例
+            debug_mode: 是否启用调试模式
         """
         self.graph = graph
+        self.event_processor = LangGraphEventProcessor(debug_mode)
 
     def _prepare_state(self, request: ChatRequest) -> Dict[str, Any]:
         """准备 LangGraph 状态"""
@@ -35,125 +197,73 @@ class LangGraphHandler:
 
         return state
 
-    async def invoke(self, request: ChatRequest) -> ChatResponse:
-        """同步调用 LangGraph"""
-        try:
-            state = self._prepare_state(request)
-            result = await self.graph.ainvoke(state, config=request.config or {})
-
-            # 提取最后的消息内容
-            if result.get("messages"):
-                last_message = result["messages"][-1]
-                content = getattr(last_message, 'content', str(last_message))
-            else:
-                content = "No response generated"
-
-            return ChatResponse(
-                content=content,
-                finish_reason="stop"
-            )
-
-        except Exception as e:
-            raise Exception(f"LangGraph invocation failed: {str(e)}")
-
     async def stream(self, request: ChatRequest) -> AsyncIterator[str]:
-        """流式调用 LangGraph"""
+        """流式调用 LangGraph - 优雅的事件处理"""
         try:
             state = self._prepare_state(request)
 
-            # 发送开始标记
-            start_chunk = StreamChunk(delta="🚀 开始处理请求...\n")
-            yield f"data: {start_chunk.model_dump_json()}\n\n"
+            # 生成运行 ID
+            run_id = str(uuid.uuid4())
+            thread_id = str(uuid.uuid4())
 
-            # 记录调试信息
-            logger.info(f"开始流式处理，初始状态: {list(state.keys())}")
+            # 准备配置
+            config = request.config or {}
+            config.update({
+                "configurable": {
+                    "thread_id": thread_id,
+                    "checkpoint_ns": "",
+                    "run_id": run_id,
+                    **config.get("configurable", {})
+                }
+            })
 
-            # 使用 astream 进行流式处理，获取每个节点的更新
-            # stream_mode="updates" 可以获取每个节点执行后的状态变化
-            async for chunk in self.graph.astream(state, config=request.config or {}, stream_mode="updates"):
-                logger.debug(f"收到流式更新: {chunk}")
+            # 发送开始事件
+            start_event = StreamEvent(
+                event=EventData(
+                    type=EventType.CHAT_START,
+                    content="开始处理对话",
+                    metadata={"messages_count": len(request.messages)}
+                ),
+                run_id=run_id,
+                thread_id=thread_id
+            )
+            yield f"data: {start_event.model_dump_json()}\n\n"
 
-                formatted_chunk = await self._format_stream_chunk(chunk)
-                if formatted_chunk:
-                    yield formatted_chunk
+            # 处理 LangGraph 事件流
+            async for raw_event in self.graph.astream_events(state, config=config, version="v2"):
+                # 记录原始事件到日志
+                event_logger.info(f"Raw event: {raw_event}")
 
-                # 添加小延迟让用户能看到流式效果
-                await asyncio.sleep(0.1)
+                # 过滤和格式化事件
+                if self.event_processor._should_forward_event(raw_event):
+                    formatted_event = self.event_processor._format_event(raw_event, run_id, thread_id)
 
-            # 获取最终结果
-            final_state = await self.graph.ainvoke(state, config=request.config or {})
-            if final_state.get("messages"):
-                last_message = final_state["messages"][-1]
-                if hasattr(last_message, 'content') and last_message.content:
-                    # 如果最终内容是HTML，发送预览
-                    content = last_message.content
-                    if content.strip().startswith('<'):
-                        preview_chunk = StreamChunk(delta=f"\n📄 生成的HTML报告 ({len(content)} 字符)\n")
-                        yield f"data: {preview_chunk.model_dump_json()}\n\n"
+                    if formatted_event:
+                        # 使用 Server-Sent Events 格式
+                        yield f"data: {formatted_event.model_dump_json()}\n\n"
 
-                        # 发送完整内容
-                        content_chunk = StreamChunk(delta=content)
-                        yield f"data: {content_chunk.model_dump_json()}\n\n"
-
-            # 发送结束标记
-            final_chunk = StreamChunk(delta="\n✅ 处理完成", finish_reason="stop")
-            yield f"data: {final_chunk.model_dump_json()}\n\n"
-
-        except Exception as e:
-            logger.error(f"流式处理错误: {str(e)}")
-            error_chunk = StreamChunk(delta=f"❌ 错误: {str(e)}", finish_reason="error")
-            yield f"data: {error_chunk.model_dump_json()}\n\n"
-
-    async def _format_stream_chunk(self, chunk: Dict[str, Any]) -> str:
-        """格式化流式输出块"""
-        try:
-            # 根据 chunk 内容提取有用信息
-            delta_content = ""
-
-            if isinstance(chunk, dict):
-                # 遍历每个节点的更新
-                for node_name, node_data in chunk.items():
-                    # 发送节点开始执行的信息
-                    delta_content += f"\n🔄 执行节点: {node_name}\n"
-
-                    if isinstance(node_data, dict):
-                        # 处理消息更新
-                        if "messages" in node_data:
-                            messages = node_data["messages"]
-                            if messages:
-                                last_message = messages[-1]
-                                if hasattr(last_message, 'content'):
-                                    content = last_message.content
-                                    # 如果是工具调用
-                                    if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
-                                        delta_content += f"🔧 调用工具: {[tc['name'] for tc in last_message.tool_calls]}\n"
-                                    # 如果是普通消息内容
-                                    elif content:
-                                        # 截取内容的一部分进行流式输出
-                                        preview = content[:200] + "..." if len(content) > 200 else content
-                                        delta_content += f"💬 生成内容: {preview}\n"
-                                elif hasattr(last_message, 'tool_call_id'):
-                                    # 工具执行结果
-                                    delta_content += f"✅ 工具执行完成\n"
-
-                        # 处理步骤更新
-                        if "steps" in node_data:
-                            steps = node_data["steps"]
-                            if steps:
-                                delta_content += f"📋 当前步骤数: {len(steps)}\n"
-
-                        # 处理下一步信息
-                        if "next_step" in node_data:
-                            next_step = node_data["next_step"]
-                            if next_step:
-                                delta_content += f"➡️ 下一步: {next_step}\n"
-
-            if delta_content.strip():
-                stream_chunk = StreamChunk(delta=delta_content)
-                return f"data: {stream_chunk.model_dump_json()}\n\n"
-
-            return None
+            # 发送结束事件
+            end_event = StreamEvent(
+                event=EventData(
+                    type=EventType.CHAT_END,
+                    content="对话处理完成"
+                ),
+                run_id=run_id,
+                thread_id=thread_id
+            )
+            yield f"data: {end_event.model_dump_json()}\n\n"
 
         except Exception as e:
-            error_chunk = StreamChunk(delta=f"❌ 格式化错误: {str(e)}\n")
-            return f"data: {error_chunk.model_dump_json()}\n\n"
+            logger.error(f"Error in stream: {e}")
+
+            # 发送错误事件
+            error_event = StreamEvent(
+                event=EventData(
+                    type=EventType.ERROR,
+                    content=f"处理过程中发生错误: {str(e)}"
+                ),
+                run_id=run_id if 'run_id' in locals() else str(uuid.uuid4()),
+                thread_id=thread_id if 'thread_id' in locals() else str(uuid.uuid4())
+            )
+            yield f"data: {error_event.model_dump_json()}\n\n"
+            raise e
