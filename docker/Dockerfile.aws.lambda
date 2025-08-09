@@ -1,0 +1,22 @@
+FROM public.ecr.aws/docker/library/python:3.12.0-slim-bullseye
+
+LABEL org.opencontainers.image.source=https://github.com/petercat-ai/petercat
+LABEL org.opencontainers.image.description="Petercat Container Image"
+LABEL org.opencontainers.image.licenses=MIT
+
+# Copy aws-lambda-adapter for Steaming response
+COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.8.1 /lambda-adapter /opt/extensions/lambda-adapter
+
+# Copy nltk_lambda_layer for using nltk in lambda
+COPY --from=petercatai/nltk-layer:1.0.1 /nltk_data /opt/nltk_data
+
+# Copy function code
+COPY . ${LAMBDA_TASK_ROOT}
+# from your project folder.
+COPY requirements.txt .
+RUN pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}" -U --no-cache-dir
+
+# Set NLTK_DATA to load nltk_data
+ENV NLTK_DATA=/opt/nltk_data
+
+CMD ["python", "main.py"]
