@@ -3,24 +3,32 @@
 import React, { useState, useEffect } from 'react';
 
 const FeatureCard = ({ icon, title, description }: { icon: string; title: string; description: string }) => (
-  <div className="card rounded-xl p-6 group hover:scale-105">
-    <div className="text-4xl mb-4 text-center">{icon}</div>
-    <h3 className="text-xl font-semibold mb-3 text-slate-800">{title}</h3>
-    <p className="text-slate-600 leading-relaxed">{description}</p>
+  <div className="bg-white/80 backdrop-blur-sm rounded-lg p-6 border border-slate-200/50">
+    <div className="text-2xl mb-3">{icon}</div>
+    <h3 className="text-lg font-semibold mb-2 text-slate-900">{title}</h3>
+    <p className="text-slate-600 text-sm leading-relaxed">{description}</p>
   </div>
 );
 
-const DemoCard = ({ title, description, status }: { title: string; description: string; status: string }) => (
-  <div className="card rounded-xl p-6 border-l-4 border-l-blue-500">
-    <div className="flex justify-between items-start mb-3">
-      <h3 className="text-lg font-semibold text-slate-800">{title}</h3>
-      <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">{status}</span>
+const ConceptCard = ({ title, traditional, generative }: { title: string; traditional: string; generative: string }) => (
+  <div className="bg-white/80 backdrop-blur-sm rounded-lg border border-slate-200/50 overflow-hidden">
+    <div className="px-4 py-3 bg-gradient-to-r from-slate-50 to-slate-100/50 border-b border-slate-200/50">
+      <h3 className="font-semibold text-slate-900">{title}</h3>
     </div>
-    <p className="text-slate-600">{description}</p>
+    <div className="grid grid-cols-2">
+      <div className="p-4 border-r border-slate-200/50">
+        <div className="text-xs text-slate-500 uppercase tracking-wide mb-2">Traditional UI</div>
+        <p className="text-sm text-slate-700">{traditional}</p>
+      </div>
+      <div className="p-4">
+        <div className="text-xs text-blue-600 uppercase tracking-wide mb-2 font-medium">Generative UI</div>
+        <p className="text-sm text-slate-700">{generative}</p>
+      </div>
+    </div>
   </div>
 );
 
-const TypewriterText = ({ text, speed = 100 }: { text: string; speed?: number }) => {
+const TypewriterText = ({ text, speed = 50 }: { text: string; speed?: number }) => {
   const [displayText, setDisplayText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -34,224 +42,255 @@ const TypewriterText = ({ text, speed = 100 }: { text: string; speed?: number })
     }
   }, [currentIndex, text, speed]);
 
-  return <span>{displayText}<span className="animate-pulse">|</span></span>;
+  return <span>{displayText}<span className="animate-pulse text-blue-500">|</span></span>;
+};
+
+const ParticleBackground = () => {
+  const [particles, setParticles] = useState<Array<{id: number, size: number, left: number, delay: number}>>([]);
+
+  useEffect(() => {
+    const newParticles = Array.from({ length: 6 }, (_, i) => ({
+      id: i,
+      size: Math.random() * 4 + 2,
+      left: Math.random() * 100,
+      delay: Math.random() * 15
+    }));
+    setParticles(newParticles);
+  }, []);
+
+  return (
+    <div className="particles">
+      {particles.map(particle => (
+        <div
+          key={particle.id}
+          className="particle"
+          style={{
+            width: `${particle.size}px`,
+            height: `${particle.size}px`,
+            left: `${particle.left}%`,
+            animationDelay: `${particle.delay}s`
+          }}
+        />
+      ))}
+    </div>
+  );
 };
 
 export default function HomePage() {
-  const [activeDemo, setActiveDemo] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedComponent, setGeneratedComponent] = useState(0);
 
-  const generateDemo = () => {
+  const generateInterface = () => {
     setIsGenerating(true);
     setTimeout(() => {
       setIsGenerating(false);
-      setActiveDemo(prev => (prev + 1) % 4);
-    }, 2000);
+      setGeneratedComponent(prev => (prev + 1) % 4);
+    }, 3000);
   };
 
+  const componentExamples = [
+    "Dynamic form with context-aware field validation",
+    "Adaptive dashboard with personalized widget layout",
+    "Smart content editor with contextual toolbar",
+    "Intelligent data visualization with auto-generated charts"
+  ];
+
   return (
-    <div className="min-h-screen">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="font-bold text-xl gradient-text">Agentic GUI</div>
-            <div className="hidden md:flex space-x-8">
-              <a href="#features" className="text-slate-600 hover:text-slate-900 transition-colors">特性</a>
-              <a href="#demos" className="text-slate-600 hover:text-slate-900 transition-colors">演示</a>
-              <a href="#about" className="text-slate-600 hover:text-slate-900 transition-colors">关于</a>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 relative overflow-hidden">
+      <ParticleBackground />
+
+      {/* Header */}
+      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200/50 relative z-10">
+        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+          <div className="font-bold text-lg gradient-text">Generative UI</div>
+          <div className="text-sm text-slate-500">Runtime Interface Generation</div>
         </div>
-      </nav>
+      </header>
 
-      {/* Hero Section */}
-      <section className="relative py-20 lg:py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-indigo-50/50"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="animate-fade-in">
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6">
-                <span className="gradient-text">生成式 UI</span>
-                <br />
-                <span className="text-slate-900">的新时代</span>
-              </h1>
-              <p className="text-xl md:text-2xl text-slate-600 mb-8 max-w-3xl mx-auto text-balance">
-                超越传统的静态界面，探索由 AI Agent 驱动的<strong>运行时动态生成</strong>用户界面
-              </p>
-            </div>
+      {/* Main Content */}
+      <main className="max-w-6xl mx-auto px-4 py-8 relative z-10">
 
-            <div className="animate-slide-up">
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-                <button
-                  className="btn-primary"
-                  onClick={generateDemo}
-                  disabled={isGenerating}
-                >
-                  {isGenerating ? '🔄 正在生成...' : '🚀 体验演示'}
-                </button>
-                <button className="btn-secondary">
-                  📖 了解更多
-                </button>
-              </div>
-            </div>
-
-            {/* Interactive Visual Element */}
-            <div className="relative max-w-4xl mx-auto animate-float">
-              <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-slate-200/50">
-                <div className="text-left">
-                  <div className="flex items-center mb-4">
-                    <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-                    <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
-                    <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                    <span className="text-sm text-slate-500 ml-2">
-                      {isGenerating ? (
-                        <TypewriterText text="AI Agent 正在生成界面..." />
-                      ) : (
-                        `演示 ${activeDemo + 1}/4 - 点击上方按钮查看动态生成`
-                      )}
-                    </span>
-                  </div>
-                  <div className="space-y-3">
-                    {isGenerating ? (
-                      <>
-                        <div className="h-4 bg-gradient-to-r from-blue-200 to-purple-200 rounded animate-pulse"></div>
-                        <div className="h-4 bg-gradient-to-r from-purple-200 to-indigo-200 rounded animate-pulse w-3/4"></div>
-                        <div className="h-4 bg-gradient-to-r from-indigo-200 to-blue-200 rounded animate-pulse w-1/2"></div>
-                      </>
-                    ) : (
-                      <div className="p-4 bg-slate-50 rounded-lg">
-                        <div className="text-sm text-slate-700">
-                          {activeDemo === 0 && "生成的表单界面：智能字段布局，自适应验证"}
-                          {activeDemo === 1 && "生成的仪表板：动态图表组合，个性化数据展示"}
-                          {activeDemo === 2 && "生成的购物界面：智能商品推荐，个性化布局"}
-                          {activeDemo === 3 && "生成的编辑器：适应性工具栏，智能功能选择"}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" className="py-20 bg-white/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold gradient-text mb-4">
-              革命性的 UI 生成方式
-            </h2>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              与传统的 AI Coding 不同，生成式 UI 在运行时动态创建界面，为用户带来前所未有的个性化体验
+        {/* Concept Introduction */}
+        <section className="mb-12">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-slate-900 mb-4">
+              Beyond <span className="gradient-text">Static Interfaces</span>
+            </h1>
+            <p className="text-lg text-slate-600 max-w-3xl mx-auto">
+              Generative UI represents a paradigm shift from traditional static interfaces to
+              <strong className="text-blue-600"> runtime-generated, context-aware user experiences</strong> powered by AI Agents.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {/* Interactive Demo */}
+          <div className="glass-card rounded-xl p-6 mb-8 relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-xl"></div>
+            <div className="relative">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-slate-900">Live Generation Demo</h2>
+                <button
+                  onClick={generateInterface}
+                  disabled={isGenerating}
+                  className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                >
+                  {isGenerating ? '⚡ Generating...' : '🎯 Generate Interface'}
+                </button>
+              </div>
+
+              <div className="bg-slate-50/70 backdrop-blur-sm rounded border border-slate-200/50 p-4 min-h-24 flex items-center relative overflow-hidden">
+                {isGenerating && <div className="absolute inset-0 shimmer"></div>}
+                {isGenerating ? (
+                  <div className="text-slate-600 relative z-10">
+                    <TypewriterText text="AI Agent analyzing context and generating optimal interface layout..." />
+                  </div>
+                ) : (
+                  <div className="text-slate-800 relative z-10">
+                    <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                    Generated: {componentExamples[generatedComponent]}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Key Differences */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold text-slate-900 mb-6">AI Coding vs <span className="gradient-text">Generative UI</span></h2>
+          <div className="grid gap-4">
+            <ConceptCard
+              title="Development Phase"
+              traditional="Code generated during development, reviewed by developers, then compiled and deployed"
+              generative="Interface generated at runtime by AI Agent based on real-time context and user input"
+            />
+            <ConceptCard
+              title="User Experience"
+              traditional="Same static interface for all users, predetermined layouts and interactions"
+              generative="Personalized interface for each user, adaptive layouts based on context and behavior"
+            />
+            <ConceptCard
+              title="Flexibility"
+              traditional="Limited to predefined components and layouts, changes require code updates"
+              generative="Unlimited possibilities, AI can create novel interface patterns and interactions"
+            />
+          </div>
+        </section>
+
+        {/* Core Capabilities */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold text-slate-900 mb-6">Core Capabilities</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <FeatureCard
               icon="🧠"
-              title="智能上下文感知"
-              description="AI Agent 根据实时上下文、用户输入和历史交互，智能决定界面布局和组件选择"
+              title="Context Awareness"
+              description="AI analyzes real-time context, user input, and interaction history to determine optimal interface structure"
             />
             <FeatureCard
               icon="⚡"
-              title="运行时动态生成"
-              description="不同于编译时生成，界面在用户交互的瞬间由 AI 实时创建和组装"
+              title="Runtime Generation"
+              description="Interfaces created dynamically during user interaction, not predetermined during development"
             />
             <FeatureCard
               icon="🎨"
-              title="个性化界面"
-              description="每个用户的界面都是独特的，基于其偏好、行为和当前需求动态调整"
+              title="Adaptive Design"
+              description="Layout, components, and interactions automatically adjust based on user needs and preferences"
             />
             <FeatureCard
               icon="🔄"
-              title="自适应交互"
-              description="界面不仅在视觉上适应，连交互逻辑都由 AI 根据场景实时优化"
+              title="Continuous Learning"
+              description="System improves interface generation based on user feedback and interaction patterns"
             />
             <FeatureCard
               icon="🚀"
-              title="无限可能性"
-              description="突破传统组件库限制，AI 可以创造全新的界面模式和交互方式"
+              title="Infinite Possibilities"
+              description="Break free from component library constraints, create entirely new interface patterns"
             />
             <FeatureCard
               icon="📱"
-              title="跨平台一致"
-              description="同一个 AI Agent 可以为不同设备和平台生成最适合的界面形态"
+              title="Cross-Platform"
+              description="Single AI Agent generates optimal interfaces for different devices and platforms"
             />
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Demo Section */}
-      <section id="demos" className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold gradient-text mb-4">
-              实际应用场景
-            </h2>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              从简单的表单到复杂的数据可视化，看看 AI Agent 如何为不同场景生成最合适的界面
-            </p>
+        {/* Technical Implementation */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold text-slate-900 mb-6">Implementation Architecture</h2>
+          <div className="glass-card rounded-xl p-6 relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-indigo-500/5 rounded-xl"></div>
+            <div className="relative grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-100 to-blue-200 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <span className="text-blue-600 text-xl">🔍</span>
+                </div>
+                <h3 className="font-semibold text-slate-900 mb-2">Context Analysis</h3>
+                <p className="text-sm text-slate-600">AI Agent processes user input, system state, and environmental context</p>
+              </div>
+              <div className="text-center">
+                <div className="w-12 h-12 bg-gradient-to-r from-green-100 to-green-200 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <span className="text-green-600 text-xl">⚙️</span>
+                </div>
+                <h3 className="font-semibold text-slate-900 mb-2">Interface Synthesis</h3>
+                <p className="text-sm text-slate-600">LLM generates optimal component structure and interaction patterns</p>
+              </div>
+              <div className="text-center">
+                <div className="w-12 h-12 bg-gradient-to-r from-purple-100 to-purple-200 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <span className="text-purple-600 text-xl">🎯</span>
+                </div>
+                <h3 className="font-semibold text-slate-900 mb-2">Runtime Rendering</h3>
+                <p className="text-sm text-slate-600">Generated interface components are dynamically rendered in real-time</p>
+              </div>
+            </div>
           </div>
+        </section>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <DemoCard
-              title="智能表单生成器"
-              description="根据数据类型和业务逻辑，AI 自动生成最优的表单布局和验证规则"
-              status="可用"
-            />
-            <DemoCard
-              title="动态数据仪表板"
-              description="基于数据特征和用户角色，实时生成最相关的图表和控件组合"
-              status="开发中"
-            />
-            <DemoCard
-              title="个性化购物界面"
-              description="根据用户购买历史和浏览行为，动态调整商品展示和推荐模块"
-              status="规划中"
-            />
-            <DemoCard
-              title="自适应文档编辑器"
-              description="基于文档类型和编辑习惯，智能选择最合适的编辑工具和布局"
-              status="规划中"
-            />
+        {/* Use Cases */}
+        <section>
+          <h2 className="text-2xl font-bold text-slate-900 mb-6">Application Scenarios</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg border border-slate-200/50 p-6">
+              <div className="flex items-center mb-3">
+                <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                <span className="text-xs text-green-700 bg-green-50 px-2 py-1 rounded">Production Ready</span>
+              </div>
+              <h3 className="font-semibold text-slate-900 mb-2">Intelligent Form Generation</h3>
+              <p className="text-slate-600 text-sm">AI generates optimal form layouts and validation rules based on data types and business logic</p>
+            </div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg border border-slate-200/50 p-6">
+              <div className="flex items-center mb-3">
+                <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+                <span className="text-xs text-yellow-700 bg-yellow-50 px-2 py-1 rounded">In Development</span>
+              </div>
+              <h3 className="font-semibold text-slate-900 mb-2">Dynamic Dashboard Creation</h3>
+              <p className="text-slate-600 text-sm">Real-time generation of relevant charts and controls based on data characteristics and user roles</p>
+            </div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg border border-slate-200/50 p-6">
+              <div className="flex items-center mb-3">
+                <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                <span className="text-xs text-blue-700 bg-blue-50 px-2 py-1 rounded">Research</span>
+              </div>
+              <h3 className="font-semibold text-slate-900 mb-2">Adaptive Content Editors</h3>
+              <p className="text-slate-600 text-sm">Context-aware editing tools that adapt based on content type and user preferences</p>
+            </div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg border border-slate-200/50 p-6">
+              <div className="flex items-center mb-3">
+                <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
+                <span className="text-xs text-purple-700 bg-purple-50 px-2 py-1 rounded">Concept</span>
+              </div>
+              <h3 className="font-semibold text-slate-900 mb-2">Personalized Shopping Interfaces</h3>
+              <p className="text-slate-600 text-sm">Dynamic product displays and recommendation modules based on user behavior and preferences</p>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* About Section */}
-      <section id="about" className="py-20 bg-slate-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold gradient-text mb-8">
-            推动界面技术的进步
-          </h2>
-          <div className="text-lg text-slate-700 leading-relaxed space-y-6">
-            <p>
-              随着 LLM 能力的不断提升和 AI Agent 应用场景的复杂化，我们正站在用户界面技术的新起点。
-              生成式 UI 代表着从静态、预定义界面向动态、智能化界面的根本性转变。
-            </p>
-            <p>
-              这不仅仅是技术的进步，更是用户体验的革命。每个用户都将拥有专属的、实时优化的界面，
-              真正实现"千人千面"的个性化体验。
-            </p>
-            <p className="text-xl font-semibold gradient-text">
-              让我们一起探索这个充满无限可能的新世界。
-            </p>
-          </div>
-        </div>
-      </section>
+      </main>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="text-2xl font-bold mb-4 gradient-text">Agentic GUI</div>
-            <p className="text-slate-400 mb-6">生成式用户界面的未来，今天就开始</p>
-            <div className="text-sm text-slate-500">
-              © 2024 Agentic GUI. 探索 AI 驱动的界面生成技术
-            </div>
+      <footer className="border-t border-slate-200/50 bg-white/60 backdrop-blur-md mt-16 relative z-10">
+        <div className="max-w-6xl mx-auto px-4 py-6">
+          <div className="flex items-center justify-between text-sm text-slate-500">
+            <div>Generative UI - Runtime Interface Generation</div>
+            <div>Powered by AI Agents & LLM</div>
           </div>
         </div>
       </footer>
