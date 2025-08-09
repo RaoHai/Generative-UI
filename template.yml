@@ -29,6 +29,7 @@ Resources:
       MemorySize: 512
       Environment:
         Variables:
+          AWS_LWA_INVOKE_MODE: RESPONSE_STREAM
           OPENAI_API_KEY: !Ref OpenAIAPIKey
           OPENAI_BASE_URL: !Ref OpenAIBaseUrl
           S3_TEMP_BUCKET_NAME: !Ref S3TempBucketName
