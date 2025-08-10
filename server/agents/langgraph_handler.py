@@ -13,29 +13,6 @@ from agents.state import AgentState
 event_logger = logging.getLogger(f"{__name__}.events")
 event_logger.setLevel(logging.INFO)
 
-# 为 event_logger 添加处理器（如果还没有的话）
-if not event_logger.handlers:
-    # 创建控制台处理器
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
-    console_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    console_handler.setFormatter(console_formatter)
-    event_logger.addHandler(console_handler)
-
-    # 创建文件处理器
-    log_dir = "logs"
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-
-    file_handler = logging.FileHandler(
-        os.path.join(log_dir, 'langgraph_events.log'),
-        encoding='utf-8'
-    )
-    file_handler.setLevel(logging.INFO)
-    file_handler.setFormatter(console_formatter)
-    event_logger.addHandler(file_handler)
-
-
 class LangGraphEventProcessor:
     """LangGraph 事件处理器，用于过滤和格式化事件"""
 
