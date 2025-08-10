@@ -133,9 +133,23 @@ const ChatMessage = ({ message, isUser }: { message: string; isUser: boolean }) 
 // Main Playground component
 export default function PlaygroundPage() {
   const [selectedLevel, setSelectedLevel] = useState(0);
-  const { completion, input, handleInputChange, handleSubmit } = useCompletion({
-    api: '/api/agents/stream/enhanced_markdown',
+  const { completion, input, handleInputChange, handleSubmit, isLoading } = useCompletion({
+    api: '/api/agents/v1/chat/completions',
     streamProtocol: 'data',
+    onFinish: (prompt, completion) => {
+      // 将 AI 回复添加到聊天记录
+      setChatMessages(prev => [
+        ...prev,
+        { text: completion, isUser: false }
+      ]);
+    },
+    onError: (error) => {
+      console.error('Completion error:', error);
+      setChatMessages(prev => [
+        ...prev,
+        { text: '抱歉，发生了错误，请稍后重试。', isUser: false }
+      ]);
+    },
   });
 
   const [chatMessages, setChatMessages] = useState([
@@ -273,20 +287,32 @@ export default function PlaygroundPage() {
 
           {/* Chat Input */}
           <div className="p-4 border-t border-slate-200/50">
-            <form onSubmit={handleSubmit} className="flex space-x-2">
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              if (input.trim()) {
+                // 添加用户消息到聊天记录
+                setChatMessages(prev => [
+                  ...prev,
+                  { text: input, isUser: true }
+                ]);
+                // 提交到 AI
+                handleSubmit(e);
+              }
+            }} className="flex space-x-2">
               <input
                 type="text"
                 value={input}
                 onChange={handleInputChange}
                 placeholder="Ask about this level..."
-                className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isLoading}
+                className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
               />
               <button
                 type="submit"
-                disabled={!input.trim()}
+                disabled={!input.trim() || isLoading}
                 className="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                Send
+                {isLoading ? '...' : 'Send'}
               </button>
             </form>
           </div>
