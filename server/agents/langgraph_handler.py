@@ -6,7 +6,8 @@ from typing import AsyncIterator, Dict, Any, Union, Optional
 
 from langchain_core.messages import BaseMessage, HumanMessage
 
-from .models import ChatRequest, ChatResponse, StreamChunk, ChatMessage, EventType, EventData, StreamEvent
+from core.types.models import ChatRequest, ChatResponse, StreamChunk, ChatMessage, EventType, EventData, StreamEvent
+from agents.state import AgentState
 
 # 创建专门的事件日志器
 event_logger = logging.getLogger(f"{__name__}.events")
@@ -157,7 +158,7 @@ class LangGraphEventProcessor:
                 )
 
         except Exception as e:
-            logger.error(f"Error formatting event: {e}")
+            event_logger.error(f"Error formatting event: {e}")
             return StreamEvent(
                 event=EventData(
                     type=EventType.ERROR,
@@ -183,17 +184,20 @@ class LangGraphHandler:
         self.graph = graph
         self.event_processor = LangGraphEventProcessor(debug_mode)
 
-    def _prepare_state(self, request: ChatRequest) -> Dict[str, Any]:
+    def _prepare_state(self, request: ChatRequest) -> AgentState:
         """准备 LangGraph 状态"""
         # 转换消息格式
         messages = [msg.to_langchain_message() for msg in request.messages]
 
+        print(f"_prepare_state: {request}")
         # 构建初始状态
-        state = {
-            "messages": messages,
-            "steps": [],
-            "next_step": None
-        }
+        state = AgentState(
+            provider=request.provider,
+            model=request.model,
+            messages=messages,
+            steps=[],
+            next_step=None
+        )
 
         return state
 
@@ -254,7 +258,7 @@ class LangGraphHandler:
             yield f"data: {end_event.model_dump_json()}\n\n"
 
         except Exception as e:
-            logger.error(f"Error in stream: {e}")
+            event_logger.error(f"Error in stream: {e}")
 
             # 发送错误事件
             error_event = StreamEvent(

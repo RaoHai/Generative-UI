@@ -12,4 +12,7 @@ pip install -r server/requirements.txt
 
 # Install LangGraph CLI with in-memory support
 pip install -U "langgraph-cli[inmem]"
+
+# run start
+python -m uvicorn main:app --reload --host 0.0.0.0 --port 8080
 ```

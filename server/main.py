@@ -8,11 +8,11 @@ from dotenv import load_dotenv
 
 from agents.router import router
 
-app = FastAPI(title="Generative UI Demo Server", version="1.0", description="Generative UI Demo Server")
+load_dotenv()
 
+app = FastAPI(title="Generative UI Demo Server", version="1.0", description="Generative UI Demo Server")
 is_dev = bool(os.environ.get("IS_DEV", False))
 
-load_dotenv()
 
 @app.get("/api/greetings")
 def home():
