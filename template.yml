@@ -12,10 +12,6 @@ Parameters:
     Type: String
     Description: OpenAI API Key
     Default: 1
-  OpenAIBaseUrl:
-    Type: String
-    Description: OpenAI Base URL
-    Default: 1
   GeminiAPIKey:
     Type: String
     Description: Gemini API Key
@@ -36,7 +32,6 @@ Resources:
           AWS_LWA_INVOKE_MODE: RESPONSE_STREAM
           OPENAI_API_KEY: !Ref OpenAIAPIKey
           GEMINI_API_KEY: !Ref GeminiAPIKey
-          OPENAI_BASE_URL: !Ref OpenAIBaseUrl
           S3_TEMP_BUCKET_NAME: !Ref S3TempBucketName
       FunctionUrlConfig:
         AuthType: NONE
