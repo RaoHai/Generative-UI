@@ -22,7 +22,8 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     provider: Optional[str] = "openai"
     model: Optional[str] = "gpt-4o"
-    messages: List[ChatMessage]
+    prompt: Optional[str] = None
+    messages: Optional[List[ChatMessage]] = None
     stream: Optional[bool] = True
     config: Optional[Dict[str, Any]] = None
 

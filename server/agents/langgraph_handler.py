@@ -164,13 +164,14 @@ class LangGraphHandler:
     def _prepare_state(self, request: ChatRequest) -> AgentState:
         """准备 LangGraph 状态"""
         # 转换消息格式
-        messages = [msg.to_langchain_message() for msg in request.messages]
+        messages = [msg.to_langchain_message() for msg in request.messages] if request.messages else []
 
         print(f"_prepare_state: {request}")
         # 构建初始状态
         state = AgentState(
             provider=request.provider,
             model=request.model,
+            prompt=request.prompt,
             messages=messages,
             steps=[],
             next_step=None
@@ -203,7 +204,7 @@ class LangGraphHandler:
                 event=EventData(
                     type=EventType.CHAT_START,
                     content="开始处理对话",
-                    metadata={"messages_count": len(request.messages)}
+                    metadata={"messages_count": len(state["messages"])}
                 ),
                 run_id=run_id,
                 thread_id=thread_id
