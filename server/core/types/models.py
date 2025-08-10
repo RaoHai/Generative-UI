@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict, Any
+from typing import List, Literal, Optional, Dict, Any, TypeAlias, Union
 from pydantic import BaseModel, Field
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
 from enum import Enum
@@ -20,6 +20,8 @@ class ChatMessage(BaseModel):
             return HumanMessage(content=self.content)
 
 class ChatRequest(BaseModel):
+    provider: Optional[str] = "openai"
+    model: Optional[str] = "gpt-4o"
     messages: List[ChatMessage]
     stream: Optional[bool] = True
     config: Optional[Dict[str, Any]] = None
@@ -63,3 +65,37 @@ class StreamEvent(BaseModel):
     event: EventData
     run_id: str
     thread_id: str
+
+class ImageURL(BaseModel):
+    url: str
+    """
+    The external URL of the image, must be a supported image types: jpeg, jpg, png,
+    gif, webp.
+    """
+
+    detail: Optional[Literal["auto", "low", "high"]] = None
+    """Specifies the detail level of the image.
+
+    `low` uses fewer tokens, you can opt in to high resolution using `high`. Default
+    value is `auto`
+    """
+
+
+class ImageURLContentBlock(BaseModel):
+    image_url: ImageURL
+    type: Literal["image_url"]
+
+
+class ImageRawURLContentBlock(BaseModel):
+    image_url: str
+    type: Literal["image_url"]
+
+
+class TextContentBlock(BaseModel):
+    text: str
+
+    type: Literal["text"]
+    """Always `text`."""
+
+MessageContent: TypeAlias = Union[ImageURLContentBlock, TextContentBlock]
+
