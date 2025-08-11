@@ -10,16 +10,18 @@ from agents.router import router
 
 load_dotenv()
 
-app = FastAPI(title="Generative UI Demo Server", version="1.0", description="Generative UI Demo Server")
 is_dev = bool(os.environ.get("IS_DEV", False))
+cors_origins_whitelist = os.environ.get("CORS_ORIGINS_WHITELIST", None)
 
+app = FastAPI(title="Generative UI Demo Server", version="1.0", description="Generative UI Demo Server")
 
 @app.get("/api/greetings")
 def home():
   return {"message": "Hello, World!"}
 
-cors_origins = ["https://agentic-gui.vercel.app/"]
-
+cors_origins = (
+    ["*"] if cors_origins_whitelist is None else cors_origins_whitelist.split(",")
+)
 
 app.add_middleware(
     CORSMiddleware,
