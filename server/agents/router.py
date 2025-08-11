@@ -45,18 +45,22 @@ def get_agent_from_query(agent_name: str = Query(..., description="代理名称"
 
 def get_agent_from_model_or_query(
     request: ChatRequest,
-    agent_name: str = Query(None, description="代理名称，可选，如果不提供则从model字段解析")
+    agent_name: str = Query(None, description="代理名称，可选，如果不提供则从请求体或model字段解析")
 ) -> CompiledStateGraph:
     """
-    从查询参数或模型名称获取代理
+    从查询参数、请求体或模型名称获取代理
+    优先级：查询参数 > 请求体agent_name > model字段解析
     """
     import_clients()
 
     # 优先使用查询参数中的agent_name
     if agent_name:
         target_agent_name = agent_name
+    # 其次使用请求体中的agent_name
+    elif request.agent_name:
+        target_agent_name = request.agent_name
     else:
-        # 从模型名称中提取代理名称
+        # 最后从模型名称中提取代理名称
         if ":" in request.model:
             target_agent_name, model_name = request.model.split(":", 1)
             # 更新请求中的模型名称
