@@ -26,6 +26,7 @@ class ChatRequest(BaseModel):
     messages: Optional[List[ChatMessage]] = []
     stream: Optional[bool] = True
     config: Optional[Dict[str, Any]] = None
+    agent_name: Optional[str] = None  # 代理名称，可选字段
 
 class ChatResponse(BaseModel):
     content: str

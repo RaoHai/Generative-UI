@@ -16,13 +16,15 @@ interface StreamingChatProps {
   placeholder?: string;
   className?: string;
   enableStreaming?: boolean;
+  agentName?: string;
 }
 
-export default function StreamingChat({ 
-  apiEndpoint, 
-  apiKey, 
+export default function StreamingChat({
+  apiEndpoint,
+  apiKey,
   placeholder = "输入消息...",
   className = "",
+  agentName = "",
   enableStreaming = true
 }: StreamingChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -67,7 +69,7 @@ export default function StreamingChat({
         console.log('请求被取消');
         return;
       }
-      
+
       console.error('发送消息失败:', error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -110,7 +112,7 @@ export default function StreamingChat({
             content: userMessage.content
           }
         ],
-        model: 'gpt-3.5-turbo',
+        agent_name: agentName,
         stream: true
       }),
       signal: abortControllerRef.current?.signal
@@ -131,7 +133,7 @@ export default function StreamingChat({
     try {
       while (true) {
         const { done, value } = await reader.read();
-        
+
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
@@ -143,8 +145,8 @@ export default function StreamingChat({
             const data = line.slice(6);
             if (data === '[DONE]') {
               // 流结束
-              setMessages(prev => prev.map(msg => 
-                msg.id === assistantMessage.id 
+              setMessages(prev => prev.map(msg =>
+                msg.id === assistantMessage.id
                   ? { ...msg, isStreaming: false }
                   : msg
               ));
@@ -155,8 +157,8 @@ export default function StreamingChat({
               const parsed = JSON.parse(data);
               const content = parsed.choices?.[0]?.delta?.content;
               if (content) {
-                setMessages(prev => prev.map(msg => 
-                  msg.id === assistantMessage.id 
+                setMessages(prev => prev.map(msg =>
+                  msg.id === assistantMessage.id
                     ? { ...msg, content: msg.content + content }
                     : msg
                 ));
@@ -190,8 +192,7 @@ export default function StreamingChat({
             content: userMessage.content
           }
         ],
-        model: 'gpt-3.5-turbo',
-        stream: false
+        agent_name:agentName,
       }),
       signal: abortControllerRef.current?.signal
     });
@@ -201,7 +202,7 @@ export default function StreamingChat({
     }
 
     const data = await response.json();
-    
+
     const assistantMessage: Message = {
       id: (Date.now() + 1).toString(),
       role: 'assistant',
@@ -238,14 +239,14 @@ export default function StreamingChat({
             )}
           </div>
         )}
-        
+
         {messages.map((message) => (
           <div
             key={message.id}
             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-[70%] px-4 py-2 rounded-lg ${
+              className={`max-w-[85%] px-4 py-2 rounded-lg ${
                 message.role === 'user'
                   ? 'bg-blue-500 text-white'
                   : 'bg-gray-100 text-gray-800'
@@ -268,7 +269,7 @@ export default function StreamingChat({
             </div>
           </div>
         ))}
-        
+
         {isLoading && !messages.some(m => m.isStreaming) && (
           <div className="flex justify-start">
             <div className="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg">
@@ -279,7 +280,7 @@ export default function StreamingChat({
             </div>
           </div>
         )}
-        
+
         <div ref={messagesEndRef} />
       </div>
 
@@ -312,7 +313,7 @@ export default function StreamingChat({
             </button>
           )}
         </div>
-        
+
         {enableStreaming && (
           <div className="mt-2 text-xs text-gray-500">
             支持流式响应，实时显示 AI 回复
