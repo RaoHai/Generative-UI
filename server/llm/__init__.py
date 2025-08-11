@@ -1,6 +1,8 @@
 import importlib
 import os
 from typing import Dict, Optional, Type
+
+from langchain_core.language_models import BaseChatModel
 from llm.base import BaseLLMClient
 
 
@@ -80,5 +82,5 @@ class LLM:
 
         raise ValueError(f"Provider '{provider}' not found.")
 
-    def get_client(self) -> BaseLLMClient:
+    def get_client(self) -> BaseChatModel:
         return self._client.get_client()

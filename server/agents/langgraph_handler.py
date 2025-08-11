@@ -9,6 +9,17 @@ from langchain_core.messages import BaseMessage, HumanMessage
 from core.types.models import ChatRequest, ChatResponse, StreamChunk, ChatMessage, EventType, EventData, StreamEvent
 from agents.state import AgentState
 
+import time
+import json
+from core.types.models import (
+    OpenAIChatCompletionResponse,
+    OpenAIChatCompletionStreamResponse,
+    OpenAIChoice,
+    OpenAIMessage,
+    OpenAIUsage,
+    convert_to_chat_request
+)
+
 # 创建专门的事件日志器
 event_logger = logging.getLogger(f"{__name__}.events")
 event_logger.setLevel(logging.INFO)
@@ -164,13 +175,14 @@ class LangGraphHandler:
     def _prepare_state(self, request: ChatRequest) -> AgentState:
         """准备 LangGraph 状态"""
         # 转换消息格式
-        messages = [msg.to_langchain_message() for msg in request.messages]
+        messages = [msg.to_langchain_message() for msg in request.messages] if request.messages else []
 
         print(f"_prepare_state: {request}")
         # 构建初始状态
         state = AgentState(
             provider=request.provider,
             model=request.model,
+            prompt=request.prompt,
             messages=messages,
             steps=[],
             next_step=None
@@ -203,7 +215,7 @@ class LangGraphHandler:
                 event=EventData(
                     type=EventType.CHAT_START,
                     content="开始处理对话",
-                    metadata={"messages_count": len(request.messages)}
+                    metadata={"messages_count": len(state["messages"])}
                 ),
                 run_id=run_id,
                 thread_id=thread_id
@@ -248,3 +260,120 @@ class LangGraphHandler:
             )
             yield f"data: {error_event.model_dump_json()}\n\n"
             raise e
+
+
+class OpenAICompatibleLangGraphHandler(LangGraphHandler):
+    """OpenAI 兼容的 LangGraph 处理器"""
+
+    def __init__(self, graph, debug_mode: bool = False):
+        super().__init__(graph, debug_mode)
+        self.completion_id = f"chatcmpl-{uuid.uuid4().hex[:20]}"
+        self.created_at = int(time.time())
+        self.completion_text = ""
+        self.prompt_tokens = 0
+        self.completion_tokens = 0
+
+    async def stream(self, openai_request: ChatRequest) -> AsyncIterator[str]:
+        """以 OpenAI 兼容格式流式处理请求"""
+        try:
+            # 转换为内部格式
+            internal_request = convert_to_chat_request(openai_request)
+
+
+            # 流式处理
+            state = self._prepare_state(internal_request)
+
+            # 生成运行 ID
+            run_id = str(uuid.uuid4())
+            thread_id = str(uuid.uuid4())
+
+            # 准备配置
+            config = internal_request.config or {}
+            config.update({
+                "configurable": {
+                    "thread_id": thread_id,
+                    "checkpoint_ns": "",
+                    "run_id": run_id,
+                    **config.get("configurable", {})
+                }
+            })
+
+            # 估算 prompt tokens（简单估算）
+            prompt_text = " ".join([msg.content for msg in openai_request.messages])
+            self.prompt_tokens = len(prompt_text.split()) * 1.3  # 粗略估算
+
+            # 发送初始流式响应
+            initial_chunk = OpenAIChatCompletionStreamResponse(
+                id=self.completion_id,
+                created=self.created_at,
+                model=openai_request.model,
+                choices=[OpenAIChoice(
+                    index=0,
+                    delta={"role": "assistant", "content": ""},
+                    finish_reason=None
+                )]
+            )
+            yield f"data: {initial_chunk.model_dump_json()}\n\n"
+
+            # 处理 LangGraph 事件流
+            async for raw_event in self.graph.astream_events(state, config=config, version="v2"):
+                # 只处理聊天模型流式输出
+                if raw_event.get("event") == "on_chat_model_stream":
+                    chunk_data = raw_event.get("data", {})
+                    chunk = chunk_data.get("chunk", {})
+
+                    # 提取内容
+                    content = ""
+                    if hasattr(chunk, 'content'):
+                        content = chunk.content
+                    elif isinstance(chunk, dict):
+                        content = chunk.get("content", "")
+                    elif isinstance(chunk, str):
+                        content = chunk
+
+                    if content:
+                        self.completion_text += content
+
+                        # 创建 OpenAI 格式的流式响应
+                        stream_chunk = OpenAIChatCompletionStreamResponse(
+                            id=self.completion_id,
+                            created=self.created_at,
+                            model=openai_request.model,
+                            choices=[OpenAIChoice(
+                                index=0,
+                                delta={"content": content},
+                                finish_reason=None
+                            )]
+                        )
+                        yield f"data: {stream_chunk.model_dump_json()}\n\n"
+
+            # 估算完成 tokens
+            self.completion_tokens = len(self.completion_text.split()) * 1.3
+
+            # 发送结束块
+            final_chunk = OpenAIChatCompletionStreamResponse(
+                id=self.completion_id,
+                created=self.created_at,
+                model=openai_request.model,
+                choices=[OpenAIChoice(
+                    index=0,
+                    delta={},
+                    finish_reason="stop"
+                )]
+            )
+            yield f"data: {final_chunk.model_dump_json()}\n\n"
+
+            # 发送结束标记
+            yield "data: [DONE]\n\n"
+
+        except Exception as e:
+            # 发送错误块
+            error_chunk = {
+                "error": {
+                    "message": str(e),
+                    "type": "server_error",
+                    "code": None
+                }
+            }
+            yield f"data: {json.dumps(error_chunk)}\n\n"
+

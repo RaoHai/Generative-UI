@@ -1,4 +1,4 @@
-from langchain_core.messages import ToolMessage
+from langchain_core.messages import ToolMessage, HumanMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph, START, END
 from langchain_core.messages import SystemMessage
@@ -80,14 +80,22 @@ async def chat_node(state: AgentState) -> AgentState:
         You will use the following tools:
         - get_stock_data: Get the stock data
     """
+
     model = get_llm_client(state)
     model_with_tools = model.bind_tools([get_stock_data], parallel_tool_calls=False)
 
+    # 准备消息列表
+    messages = [SystemMessage(content=system_prompt)]
+
+    # 如果有动态prompt参数，则作为用户消息添加
+    if state.get("prompt"):
+        messages.append(HumanMessage(content=state["prompt"]))
+
+    # 添加原有的消息
+    messages.extend(state["messages"])
+
     # Run the model to generate a response
-    response = await model_with_tools.ainvoke([
-        SystemMessage(content=system_prompt),
-        *state["messages"],
-    ], RunnableConfig(recursion_limit=25))
+    response = await model_with_tools.ainvoke(messages, RunnableConfig(recursion_limit=25))
 
     messages = state["messages"] + [response]
 

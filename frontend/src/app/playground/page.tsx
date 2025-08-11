@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useCompletion } from '@ai-sdk/react';
+
 
 // Level data with descriptions and code examples
 const levelData = [
@@ -131,28 +133,31 @@ const ChatMessage = ({ message, isUser }: { message: string; isUser: boolean }) 
 // Main Playground component
 export default function PlaygroundPage() {
   const [selectedLevel, setSelectedLevel] = useState(0);
+  const { completion, input, handleInputChange, handleSubmit, isLoading } = useCompletion({
+    api: '/api/agents/v1/chat/completions',
+    streamProtocol: 'data',
+    onFinish: (prompt, completion) => {
+      // 将 AI 回复添加到聊天记录
+      setChatMessages(prev => [
+        ...prev,
+        { text: completion, isUser: false }
+      ]);
+    },
+    onError: (error) => {
+      console.error('Completion error:', error);
+      setChatMessages(prev => [
+        ...prev,
+        { text: '抱歉，发生了错误，请稍后重试。', isUser: false }
+      ]);
+    },
+  });
+
   const [chatMessages, setChatMessages] = useState([
     { text: "Welcome! Select a level to explore different UI generation approaches.", isUser: false }
   ]);
-  const [inputMessage, setInputMessage] = useState('');
 
   const currentLevel = levelData[selectedLevel];
 
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputMessage.trim()) return;
-
-    // Add user message
-    setChatMessages(prev => [...prev, { text: inputMessage, isUser: true }]);
-
-    // Simulate AI response based on selected level
-    setTimeout(() => {
-      const response = `Demonstrating ${currentLevel.title}: ${currentLevel.description.split('.')[0]}.`;
-      setChatMessages(prev => [...prev, { text: response, isUser: false }]);
-    }, 1000);
-
-    setInputMessage('');
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
@@ -282,20 +287,32 @@ export default function PlaygroundPage() {
 
           {/* Chat Input */}
           <div className="p-4 border-t border-slate-200/50">
-            <form onSubmit={handleSendMessage} className="flex space-x-2">
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              if (input.trim()) {
+                // 添加用户消息到聊天记录
+                setChatMessages(prev => [
+                  ...prev,
+                  { text: input, isUser: true }
+                ]);
+                // 提交到 AI
+                handleSubmit(e);
+              }
+            }} className="flex space-x-2">
               <input
                 type="text"
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
+                value={input}
+                onChange={handleInputChange}
                 placeholder="Ask about this level..."
-                className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isLoading}
+                className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
               />
               <button
                 type="submit"
-                disabled={!inputMessage.trim()}
+                disabled={!input.trim() || isLoading}
                 className="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                Send
+                {isLoading ? '...' : 'Send'}
               </button>
             </form>
           </div>

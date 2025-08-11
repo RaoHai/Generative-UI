@@ -22,7 +22,8 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     provider: Optional[str] = "openai"
     model: Optional[str] = "gpt-4o"
-    messages: List[ChatMessage]
+    prompt: Optional[str] = None
+    messages: Optional[List[ChatMessage]] = []
     stream: Optional[bool] = True
     config: Optional[Dict[str, Any]] = None
 
@@ -98,4 +99,55 @@ class TextContentBlock(BaseModel):
     """Always `text`."""
 
 MessageContent: TypeAlias = Union[ImageURLContentBlock, TextContentBlock]
+
+# OpenAI 兼容格式的数据模型
+class OpenAIMessage(BaseModel):
+    """OpenAI 格式的消息"""
+    role: str  # "user", "assistant", "system"
+    content: str
+    name: Optional[str] = None
+
+class OpenAIChoice(BaseModel):
+    """OpenAI 响应选择"""
+    index: int
+    message: Optional[OpenAIMessage] = None
+    delta: Optional[Dict[str, Any]] = None
+    finish_reason: Optional[str] = None
+
+class OpenAIUsage(BaseModel):
+    """OpenAI 使用统计"""
+    prompt_tokens: int
+    completion_tokens: int
+    total_tokens: int
+
+class OpenAIChatCompletionResponse(BaseModel):
+    """OpenAI /chat/completions 响应格式"""
+    id: str
+    object: str = "chat.completion"
+    created: int
+    model: str
+    choices: List[OpenAIChoice]
+    usage: Optional[OpenAIUsage] = None
+
+class OpenAIChatCompletionStreamResponse(BaseModel):
+    """OpenAI /chat/completions 流式响应格式"""
+    id: str
+    object: str = "chat.completion.chunk"
+    created: int
+    model: str
+    choices: List[OpenAIChoice]
+
+def convert_to_chat_request(openai_request: ChatRequest) -> ChatRequest:
+    """将 OpenAI 请求转换为内部 ChatRequest 格式"""
+    messages = [
+        ChatMessage(role=msg.role, content=msg.content)
+        for msg in openai_request.messages
+    ]
+
+    return ChatRequest(
+        provider="openai",  # 默认提供商
+        model=openai_request.model,
+        messages=messages,
+        stream=openai_request.stream,
+    )
 
