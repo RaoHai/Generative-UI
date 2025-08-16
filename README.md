@@ -1,5 +1,7 @@
 # Generative UI
 
+[中文版本 / Chinese Version](README.zhCN.md)
+
 As the capabilities of Large Language Models (LLMs) and the complexity of AI Agent application scenarios continue to evolve, a promising concept has emerged: can we extend the generative paradigm from text and content generation to interface and application generation - what we call Generative UI?
 
 This differs from traditional AI Coding. AI Coding assists in generating web application code during development, which is then reviewed by developers, compiled, and deployed to users. Generative UI, however, is a run-time product dynamically generated and assembled by AI. The application's layout, components, and even overall interaction logic are determined by AI Agents in real-time based on context, user input, and reasoning.
