@@ -5,113 +5,186 @@ import StreamingChat from '../components/StreamingChat';
 
 const endpoint = process.env.NEXT_PUBLIC_API_ENDPOINT || 'http://localhost:8080';
 
-// Level data with descriptions and code examples
+// Level data with descriptions and code examples based on the Agent-Centric Maturity Spectrum
 const levelData = [
   {
     id: 1,
-    title: "Level 1: Assisted Generation",
-    emoji: "🎨",
+    title: "Level 1: The Developer's Agent",
+    emoji: "👨‍💻",
     agentName: "enhanced_markdown",
-    description: "AI as a designer's co-pilot. The user is a creator (designer, developer), and the AI is a tool used to produce static assets more efficiently.",
-    features: ["Static design assets", "Accelerated design cycles", "Code generation", "Design system alignment"],
-    codeExample: `// AI-assisted design generation
-const generateComponent = async (prompt) => {
-  const design = await ai.generateDesign({
-    prompt: "Create a user profile card",
-    style: "modern",
-    framework: "react"
+    description: "Instructional Interaction: AI agent acts as the developer's 'co-pilot'. The developer is the creator and instructor, maintaining full control while AI executes single, explicit tasks and returns static results.",
+    paradigm: "Instructional Interaction",
+    humanRole: "Creator / Instructor",
+    agentAutonomy: "Low: Executes single, explicit tasks",
+    agentCapability: "Content Generation",
+    uiRole: "Static output of the agent",
+    features: ["Content generation", "Code snippet creation", "Design mockup conversion", "Single-turn instruction execution"],
+    businessValue: "Increased development efficiency, faster prototyping",
+    challenges: "Unpredictable output quality, requires manual review",
+    codeExample: `// Developer Agent - Instructional Generation
+const generateUIFromSketch = async (sketch, requirements) => {
+  const agent = new DeveloperAgent();
+
+  // Single instruction, static output
+  const component = await agent.generateCode({
+    input: sketch,
+    prompt: "Convert this design sketch to React component",
+    framework: "react",
+    style: requirements.designSystem
   });
 
-  return design;
+  // Developer needs to review and integrate
+  return component; // Static code output
 };
 
-// Output: Static React component code
-// Developer reviews and integrates manually`,
+// Example usage
+const userCard = await generateUIFromSketch(
+  designSketch,
+  { designSystem: "tailwind" }
+);`,
     color: "from-blue-100 to-blue-200"
   },
   {
     id: 2,
-    title: "Level 2: Adaptive Composition",
-    emoji: "🔄",
+    title: "Level 2: The Personalization Agent",
+    emoji: "🎯",
     agentName: "enhanced_markdown",
-    description: "UI as a dynamic, personalized surface. The user is a consumer, and the AI is a curator that dynamically assembles a personalized interface in real-time.",
-    features: ["Real-time personalization", "Component composition", "Server-driven UI", "Dynamic assembly"],
-    codeExample: `// Server-driven UI with personalization
-const PersonalizedUI = ({ userId, context }) => {
-  const [uiConfig, setUiConfig] = useState(null);
+    description: "Implicit Interaction: AI agent serves end-users at runtime, operating in the background. Users interact through natural behaviors while the agent observes and autonomously decides how to dynamically adjust the interface.",
+    paradigm: "Implicit Interaction",
+    humanRole: "Consumer / Data Provider",
+    agentAutonomy: "Medium: Makes real-time decisions within preset rules",
+    agentCapability: "Retrieval-Augmented Generation (RAG)",
+    uiRole: "Canvas dynamically adjusted by the agent",
+    features: ["Real-time personalization", "Dynamic component composition", "Server-driven UI", "User behavior analysis"],
+    businessValue: "Increased user engagement and conversion through deep personalization",
+    challenges: "Architectural overhaul (SDUI), data privacy, real-time performance",
+    codeExample: `// Personalization Agent - Implicit Adaptation
+const PersonalizationAgent = () => {
+  const [uiLayout, setUILayout] = useState(null);
 
   useEffect(() => {
-    const config = personalizer.compose({
-      userId,
-      context,
-      preferences: userPreferences,
-      behavior: userBehavior
+    // Agent makes automatic decisions based on user context
+    const agent = new PersonalizationAgent({
+      userProfile: currentUser,
+      behaviorHistory: userBehavior,
+      contextData: deviceInfo
     });
-    setUiConfig(config);
-  }, [userId, context]);
 
-  return <ComponentRenderer config={uiConfig} />;
+    // Implicitly generate personalized interface
+    const layout = agent.composeInterface({
+      components: availableComponents,
+      rules: personalizationRules,
+      realTimeContext: getCurrentContext()
+    });
+
+    setUILayout(layout);
+  }, [userBehavior, contextData]);
+
+  // Server-driven dynamic interface
+  return <ServerDrivenRenderer layout={uiLayout} />;
 };`,
     color: "from-green-100 to-green-200"
   },
   {
     id: 3,
-    title: "Level 3: Conversational Orchestration",
+    title: "Level 3: The Conversational Agent",
     emoji: "💬",
     agentName: "enhanced_markdown",
-    description: "UI as a fluid, interactive partner. The user is a director, and the AI is a collaborator that reconfigures the interface and executes tasks based on natural language dialogue.",
-    features: ["Natural language dialogue", "Dynamic reconfiguration", "Context awareness", "Task execution"],
-    codeExample: `// Conversational UI orchestration
-const ConversationalUI = () => {
+    description: "Collaborative Interaction: AI agent moves from behind the scenes to the forefront, becoming a partner users can directly communicate with. Users guide through natural language dialogue while the agent calls external tools and reconfigures the interface in real-time.",
+    paradigm: "Collaborative Interaction",
+    humanRole: "Director / Conversationalist",
+    agentAutonomy: "High: Understands multi-step instructions and uses tools",
+    agentCapability: "Tool Use",
+    uiRole: "Medium for human-agent dialogue",
+    features: ["Natural language dialogue", "Tool calling", "Multi-turn task execution", "Real-time interface reconfiguration"],
+    businessValue: "Drastically simplified workflows for complex tasks, improved operational efficiency",
+    challenges: "Managing conversational context, ambiguity in intent",
+    codeExample: `// Conversational Agent - Collaborative Execution
+const ConversationalAgent = () => {
   const [conversation, setConversation] = useState([]);
-  const [uiState, setUIState] = useState({});
+  const [currentUI, setCurrentUI] = useState({});
 
-  const handleUserInput = async (input) => {
-    const response = await agent.processDialogue({
-      input,
-      context: uiState,
-      conversation
+  const handleUserMessage = async (message) => {
+    const agent = new ConversationalAgent({
+      tools: [dataQueryTool, chartTool, apiTool],
+      context: currentUI,
+      history: conversation
     });
 
-    // AI reconfigures UI and executes actions
-    setUIState(response.newUIState);
-    setConversation([...conversation, input, response.reply]);
+    // Understand intent and decompose tasks
+    const response = await agent.processDialogue({
+      userInput: message,
+      availableTools: systemTools,
+      currentState: currentUI
+    });
+
+    // Execute tool calls and update interface
+    const results = await agent.executeTools(response.toolCalls);
+    setCurrentUI(response.newUIConfig);
+    setConversation(prev => [...prev, message, response.reply]);
   };
 
-  return <FluidInterface state={uiState} onInput={handleUserInput} />;
+  return (
+    <div>
+      <DynamicInterface config={currentUI} />
+      <ChatInterface onMessage={handleUserMessage} />
+    </div>
+  );
 };`,
     color: "from-purple-100 to-purple-200"
   },
   {
     id: 4,
-    title: "Level 4: Agentic Delegation",
+    title: "Level 4: The Autonomous Agent",
     emoji: "🤖",
     agentName: "enhanced_markdown",
-    description: "UI as a workspace for autonomous agents. The user is a principal, and the AI is an agent that autonomously uses the application's interface and APIs to achieve high-level goals.",
-    features: ["Autonomous execution", "Multi-step planning", "Goal delegation", "End-to-end automation"],
-    codeExample: `// Autonomous agent delegation
-const AgenticWorkspace = () => {
-  const [goals, setGoals] = useState([]);
-  const [agentStatus, setAgentStatus] = useState('idle');
+    description: "Delegated Interaction: The ultimate transformation of human-computer interaction paradigm. Users no longer give specific instructions but set high-level goals, fully entrusting the agent to achieve them autonomously.",
+    paradigm: "Delegated Interaction",
+    humanRole: "Principal / Supervisor",
+    agentAutonomy: "Very High: Autonomously plans and executes complex goals",
+    agentCapability: "Planning, Reflection, Multi-Agent Collaboration",
+    uiRole: "Workbench for agent to execute tasks",
+    features: ["Autonomous planning", "Multi-step execution", "Exception handling", "Multi-agent collaboration"],
+    businessValue: "End-to-end automation of complex business processes, creating significant value",
+    challenges: "Safety, alignment, trust, explainability, risk of human skill erosion",
+    codeExample: `// Autonomous Agent - Delegated Execution
+const AutonomousAgent = () => {
+  const [activeGoals, setActiveGoals] = useState([]);
+  const [agentWorkspace, setAgentWorkspace] = useState({});
 
-  const delegateGoal = async (goal) => {
+  const delegateGoal = async (highLevelGoal) => {
     const agent = new AutonomousAgent({
-      tools: availableTools,
-      apis: systemAPIs,
-      workspace: currentWorkspace
+      capabilities: ['planning', 'reflection', 'collaboration'],
+      tools: allSystemTools,
+      apis: externalAPIs,
+      constraints: userConstraints
     });
 
-    // Agent plans and executes multi-step process
-    const result = await agent.executeGoal({
-      goal,
-      onProgress: (status) => setAgentStatus(status),
-      onComplete: (result) => handleCompletion(result)
+    // Autonomous decomposition and planning
+    const plan = await agent.createPlan({
+      goal: highLevelGoal,
+      constraints: systemConstraints,
+      resources: availableResources
     });
 
-    return result;
+    // Execute multi-step tasks
+    const execution = await agent.executeAutonomously({
+      plan,
+      onProgress: updateWorkspace,
+      onDecision: requestApproval,
+      onError: handleException
+    });
+
+    return execution;
   };
 
-  return <AgentWorkspace onDelegate={delegateGoal} status={agentStatus} />;
+  return (
+    <div>
+      <GoalDelegationInterface onDelegate={delegateGoal} />
+      <AgentWorkspaceViewer workspace={agentWorkspace} />
+      <ExecutionMonitor goals={activeGoals} />
+    </div>
+  );
 };`,
     color: "from-indigo-100 to-indigo-200"
   }
@@ -208,6 +281,46 @@ export default function HomePage() {
             </div>
 
             <p className="text-slate-700 mb-6 leading-relaxed">{currentLevel.description}</p>
+
+            {/* Agent-Human Interaction Details */}
+            <div className="mb-6 grid grid-cols-2 gap-4">
+              <div className="space-y-3">
+                <div>
+                  <h5 className="font-medium text-slate-800 text-sm">Interaction Paradigm</h5>
+                  <p className="text-sm text-slate-600">{currentLevel.paradigm}</p>
+                </div>
+                <div>
+                  <h5 className="font-medium text-slate-800 text-sm">Human Role</h5>
+                  <p className="text-sm text-slate-600">{currentLevel.humanRole}</p>
+                </div>
+                <div>
+                  <h5 className="font-medium text-slate-800 text-sm">Agent Autonomy</h5>
+                  <p className="text-sm text-slate-600">{currentLevel.agentAutonomy}</p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <h5 className="font-medium text-slate-800 text-sm">Core Capability</h5>
+                  <p className="text-sm text-slate-600">{currentLevel.agentCapability}</p>
+                </div>
+                <div>
+                  <h5 className="font-medium text-slate-800 text-sm">UI Role</h5>
+                  <p className="text-sm text-slate-600">{currentLevel.uiRole}</p>
+                </div>
+                <div>
+                  <h5 className="font-medium text-slate-800 text-sm">Key Challenges</h5>
+                  <p className="text-sm text-slate-600">{currentLevel.challenges}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Business Value */}
+            <div className="mb-6">
+              <h4 className="font-semibold text-slate-900 mb-2">Business Value</h4>
+              <p className="text-sm text-slate-600 bg-green-50 p-3 rounded-lg border border-green-200">
+                {currentLevel.businessValue}
+              </p>
+            </div>
 
             {/* Features */}
             <div className="mb-6">
